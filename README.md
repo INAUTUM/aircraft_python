@@ -1,8 +1,11 @@
 # aircraft_python
 
 Система мониторинга авиарейсов в районе Черного моря с веб-интерфейсом
+
 На момент теста не было полетов в районе черного моря, поэтому в config.py указаны координаты всей карты
+
 Чтобы это изменить координаты нужно поменять цифры в BLACK_SEA_BBOX
+
 ```python
 BLACK_SEA_BBOX = (41.0, 27.5, 44.5, 41.5) 
 ```
@@ -31,7 +34,7 @@ BLACK_SEA_BBOX = (41.0, 27.5, 44.5, 41.5)
 - API ключ от [AviationStack](https://aviationstack.com/)
 
 ### Установка и использование
-1. Клонируйте репозиторий:
+1. Клонируем репозиторий:
 ```bash
 git clone https://github.com/INAUTUM/aircraft_python.git
 cd aviation-monitoring
@@ -45,7 +48,7 @@ docker-compose up --build
 ```bash
 docker compose ps
 ```
-5. После успешной запуска сервисов можно посмотреть на веб-интерфейс на адресе `localhost:8050`
+5. После успешного запуска сервисов можно посмотреть на веб-интерфейс по адресу `localhost:8050`
 6. Можно обращаться к бд (данный запрос выведет icao и модель самолета):
 ```bash
 docker exec -it aircraft_python-db-1 psql -U postgres -d aviation -c "SELECT icao_code, model_name FROM aircrafts;"
