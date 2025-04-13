@@ -36,7 +36,7 @@ BLACK_SEA_BBOX = (41.0, 27.5, 44.5, 41.5)
 git clone https://github.com/INAUTUM/aircraft_python.git
 cd aviation-monitoring
 ```
-2. Добавляем свой API ключ в файл `.env`:
+2. Добавляем свой API ключ в файл `.env`
 3. Запускаем сервисы:
 ```bash
 docker compose up -d
