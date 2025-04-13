@@ -115,18 +115,48 @@ class FlightTracker:
         success_count = 0
         failure_count = 0
 
+        # Собираем уникальные aircrafts
+        aircrafts = {}
+        for flight in flights:
+            aircraft_data = flight.get('aircraft', {})
+            icao = aircraft_data.get('icao')
+            if icao:
+                model = aircraft_data.get('model', '').strip()
+                aircrafts[icao] = model or icao
+
+        if aircrafts:
+            try:
+                with get_db_connection() as conn:
+                    with conn.cursor() as cursor:
+                        insert_query = """
+                            INSERT INTO aircrafts (icao_code, model_name)
+                            VALUES (%s, %s)
+                            ON CONFLICT (icao_code) DO UPDATE SET
+                                model_name = CASE 
+                                    WHEN EXCLUDED.model_name != EXCLUDED.icao_code 
+                                    THEN EXCLUDED.model_name 
+                                    ELSE aircrafts.model_name 
+                                END
+                        """
+                        data = [(icao, model) for icao, model in aircrafts.items()]
+                        cursor.executemany(insert_query, data)
+                        conn.commit()
+            except Exception as e:
+                logger.error(f"Ошибка сохранения aircrafts: {str(e)}")
+
+        # Сохраняем остальные данные
         for idx, flight in enumerate(flights):
             for attempt in range(RETRY_CONFIG['db']['max_retries']):
                 try:
                     with get_db_connection() as conn:
                         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
                             try:
-                                if not all(key in flight for key in ('airline', 'flight', 'aircraft', 'live')):
+                                if not all(key in flight for key in ('airline', 'flight', 'live')):
                                     raise ValueError("Некорректная структура данных рейса")
 
                                 airline_data = flight['airline']
                                 flight_data = flight['flight']
-                                aircraft_data = flight['aircraft']
+                                aircraft_data = flight.get('aircraft', {})
                                 live_data = flight['live']
 
                                 # Сохранение авиакомпании
@@ -142,17 +172,6 @@ class FlightTracker:
                                     }
                                 )
                                 airline_id = cursor.fetchone()['id']
-
-                                # Сохранение самолета
-                                cursor.execute(
-                                    """INSERT INTO aircrafts (icao_code, model_name)
-                                    VALUES (%(icao)s, %(model)s)
-                                    ON CONFLICT (icao_code) DO NOTHING""",
-                                    {
-                                        'icao': aircraft_data['icao'],
-                                        'model': aircraft_data.get('model', 'Unknown Model')
-                                    }
-                                )
 
                                 # Сохранение рейса
                                 cursor.execute(
@@ -177,7 +196,7 @@ class FlightTracker:
                                     RETURNING id""",
                                     {
                                         'flight_icao': flight_data['icao'],
-                                        'aircraft_icao': aircraft_data['icao'],
+                                        'aircraft_icao': aircraft_data.get('icao'),
                                         'airline_id': airline_id,
                                         'departure': flight.get('departure', {}).get('airport', 'N/A'),
                                         'arrival': flight.get('arrival', {}).get('airport', 'N/A')
