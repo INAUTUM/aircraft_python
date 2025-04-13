@@ -50,3 +50,14 @@ docker compose ps
 ```bash
 docker exec -it aircraft_python-db-1 psql -U postgres -d aviation -c "SELECT icao_code, model_name FROM aircrafts;"
 ```
+
+## Модель данных:
+
+![Data Model](data_model.png)
+
+**Основные сущности:**
+- `aircrafts` (самолеты)  
+- `airlines` (авиакомпании)  
+- `flights` (рейсы)  
+- `flight_positions` (геопозиции)
+- `flight_counts` (статисика рейсов)
