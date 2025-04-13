@@ -53,7 +53,7 @@ docker exec -it aircraft_python-db-1 psql -U postgres -d aviation -c "SELECT ica
 
 ## Модель данных:
 
-![Data Model](data_model.png)
+![Data Model](model_data.png)
 
 **Основные сущности:**
 - `aircrafts` (самолеты)  
