@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: aviation
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ./update_models.sql:/docker-entrypoint-initdb.d/update.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aviation"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  scraper:
+    build: 
+      context: .
+      dockerfile: Dockerfile.scraper
+    environment:
+      API_KEY: ${API_KEY}
+      DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+
+  dashboard:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dashboard
+    ports:
+      - "8050:8050"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:  # Добавьте эту секцию
