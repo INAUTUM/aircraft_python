@@ -39,7 +39,7 @@ cd aviation-monitoring
 2. Добавляем свой API ключ в файл `.env`
 3. Запускаем сервисы:
 ```bash
-docker compose up -d
+docker-compose up --build
 ```
 4. Проверяем работоспособность:
 ```bash
